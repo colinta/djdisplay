@@ -1,6 +1,7 @@
 import time
 import sys
 import uselect
+import machine
 
 from picographics import PicoGraphics, DISPLAY_INKY_PACK
 
@@ -24,6 +25,11 @@ state = {
 }
 command_count = 0
 
+button_a = machine.Pin(12, machine.Pin.IN, pull=machine.Pin.PULL_UP)
+button_b = machine.Pin(13, machine.Pin.IN, pull=machine.Pin.PULL_UP)
+button_c = machine.Pin(14, machine.Pin.IN, pull=machine.Pin.PULL_UP)
+last_button_times = {"A": 0, "B": 0, "C": 0}
+BUTTON_DEBOUNCE_MS = 300
 
 # USB CDC serial input from the host.
 poll = uselect.poll()
@@ -43,7 +49,7 @@ def render():
 
     if state["status"]:
         status_label = state["status"]
-        status_x = max(10, WIDTH - (len(status_label) * 8 * 2) - 8)
+        status_x = max(10, WIDTH - (len(status_label) * 8 * 2) - 8 + 30)
         display.text(status_label, status_x, HEIGHT - 22, WIDTH - status_x, 2)
 
     display.update()
@@ -144,16 +150,33 @@ def handle_command(line):
         print("ERR:UNKNOWN_COMMAND")
 
 
+def check_buttons():
+    now = time.ticks_ms()
+
+    if not button_a.value() and time.ticks_diff(now, last_button_times["A"]) > BUTTON_DEBOUNCE_MS:
+        last_button_times["A"] = now
+        print("BUTTON:A")
+
+    if not button_b.value() and time.ticks_diff(now, last_button_times["B"]) > BUTTON_DEBOUNCE_MS:
+        last_button_times["B"] = now
+        print("BUTTON:B")
+
+    if not button_c.value() and time.ticks_diff(now, last_button_times["C"]) > BUTTON_DEBOUNCE_MS:
+        last_button_times["C"] = now
+        print("BUTTON:C")
+
+
 render()
 print("READY")
 
 buffer = ""
 while True:
-    if poll.poll(100):
+    if poll.poll(20):
         ch = sys.stdin.read(1)
         if ch == "\n":
             handle_command(buffer)
             buffer = ""
         elif ch != "\r":
             buffer += ch
-    time.sleep_ms(10)
+    check_buttons()
+    time.sleep_ms(20)

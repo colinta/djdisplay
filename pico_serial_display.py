@@ -43,13 +43,14 @@ def render():
 
     display.set_font("bitmap8")
 
-    display.text(state["title"], 8, 12, WIDTH - 16, 3)
-    display.text(state["line1"], 8, 52, WIDTH - 16, 2)
+    # Use a very wide wrap width for artist/album so they stay on one line.
+    display.text(state["title"], 8, 22, WIDTH * 4, 3)
+    display.text(state["line1"], 8, 62, WIDTH * 4, 2)
     display.text(state["line2"], 8, 84, WIDTH - 16, 2)
 
     if state["status"]:
         status_label = state["status"]
-        status_x = max(10, WIDTH - (len(status_label) * 8 * 2) - 8)
+        status_x = max(10, WIDTH - (len(status_label) * 8 * 2) - 8 + 40)
         display.text(status_label, status_x, HEIGHT - 22, WIDTH - status_x, 2)
 
     display.update()

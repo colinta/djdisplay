@@ -166,6 +166,13 @@ journalctl -u inky-mpd-watcher.service -f
 journalctl -u inky-updater.service -f
 ```
 
+Force an immediate display refresh:
+```bash
+rm -f /opt/inky/state/displayed-track.json /opt/inky/state/last-update.json
+```
+
+This clears the remembered display state and throttle timestamp, so the updater will redraw the current track on its next loop.
+
 Restart services after code changes:
 ```bash
 sudo systemctl restart inky-mpd-watcher.service inky-updater.service
